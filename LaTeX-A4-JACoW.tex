@@ -1,0 +1,107 @@
+\documentclass[a4paper,
+               %boxit,
+               %titlepage,   % separate title page
+               %refpage      % separate references
+              ]{jacow}
+%
+% CHANGE SEQUENCE OF GRAPHICS EXTENSION TO BE EMBEDDED
+% ----------------------------------------------------
+% test for XeTeX where the sequence is by default eps-> pdf, jpg, png, pdf, ...
+%    and the JACoW template provides JACpic2v3.eps and JACpic2v3.jpg which
+%    might generates errors, therefore PNG and JPG first
+%
+\makeatletter%
+	\ifboolexpr{bool{xetex}}
+	 {\renewcommand{\Gin@extensions}{.pdf,%
+	                    .png,.jpg,.bmp,.pict,.tif,.psd,.mac,.sga,.tga,.gif,%
+	                    .eps,.ps,%
+	                    }}{}
+\makeatother
+
+% CHECK FOR XeTeX/LuaTeX BEFORE DEFINING AN INPUT ENCODING
+% --------------------------------------------------------
+%   utf8  is default for XeTeX/LuaTeX 
+%   utf8  in LaTeX only realises a small portion of codes
+%
+\ifboolexpr{bool{xetex} or bool{luatex}} % test for XeTeX/LuaTeX
+ {}                                      % input encoding is utf8 by default
+ {\usepackage[utf8]{inputenc}}           % switch to utf8
+
+\usepackage[USenglish]{babel}			 
+
+\usepackage[final]{pdfpages}
+\usepackage{multirow}
+\usepackage{ragged2e}
+
+%
+% if BibLaTeX is used
+%
+\ifboolexpr{bool{jacowbiblatex}}%
+ {%
+  \addbibresource{jacow-test.bib}
+  \addbibresource{biblatex-examples.bib}
+ }{}
+\listfiles
+
+%
+% command for typesetting a \section like word
+%
+\newcommand\SEC[1]{\textbf{\uppercase{#1}}}
+
+%%
+%%   Lengths for the spaces in the title
+%%   \setlength\titleblockstartskip{..}  %before title, default 3pt
+%%   \setlength\titleblockmiddleskip{..} %between title + author, default 1em
+%%   \setlength\titleblockendskip{..}    %afterauthor, default 1em
+
+%\copyrightspace %default 1cm. arbitrary size with e.g. \copyrightspace[2cm]
+
+% testing to fill the copyright space
+%\usepackage{eso-pic}
+%\AddToShipoutPictureFG*{\AtTextLowerLeft{\textcolor{red}{COPYRIGHTSPACE}}}
+
+\begin{document}
+
+\title{SixTrack project: status, running environment and new developments\thanks{Research supported by the HL-LHC project}}
+
+\author{
+R.~De Maria \thanks{riccardo.de.maria@cern.ch},
+J.~Andersson,
+V.K.~Berglyd Olsen,
+L.~Field,
+M.~Giovannozzi,
+P.~D.~Hermes,
+N.~H\o imyr, \\
+S.~Kostoglou,
+G. Iadarola,
+E.~Mcintosh,
+A.~Mereghetti,
+J.~Molson,
+D. Pellegrini,\\
+T.~Persson,
+M. Schwinzerl,
+K.~Sjobak,
+CERN, Geneva, Switzerland; \\
+E.H.~Maclean, CERN, Geneva, Switzerland and University of Malta, Msida, Malta\\
+I.~Zacharov, EPFL, Lausanne, Switzerland;
+S.~Singh, IIT Madras, India \thanks{Work supported by Google Summer of Code 2018}
+}
+\maketitle
+
+%
+\begin{abstract}
+SixTrack is a single--particle tracking code for high--energy circular accelerators routinely used at CERN for the Large Hadron Collider (LHC), its luminosity upgrade (HL-LHC), the Future Circular Collider (FCC), and the Super Proton Synchrotron (SPS) simulations. The code is based on a 6D symplectic tracking engine, which is optimized for long--term tracking simulations and delivers fully reproducible results on many platforms. It also includes several scattering engines for beam--matter interactions studies, as well as facilities to run integrated simulations with FLUKA and GEANT4. These features differentiate SixTrack from general--purpose, optics--design software like MAD-X. The code recently underwent a major restructuring to merge advanced features in a single branch such as multiple ion species, interface with external codes and high--performance input/output (XRootD, HDF5). In the process, the code moved from Fortran 77 to Fortran 2018 standard, achieving also a better modularization. Physics models (beam--beam effects, rf--multipoles, current carrying wires, solenoid, electron--lenses) and methods (symplecticity check) have also been reviewed and refined to offer more accurate results. The SixDesk running environment allows the user to manage the large batches of simulations required for accurate predictions of the dynamic aperture. SixDesk supports CERN LSF and HTCondor batch systems, as well as the BOINC infrastructure in the framework of the LHC@Home volunteering computing project. SixTrackLib is a new library aimed at providing a portable and flexible tracking engine for single-- and multi--particle problems using the models and formalism of SixTrack. The tracking routines are implemented in a parametrized C code that is specialized to run vectorized in CPUs and GPUs using SIMD intrinsics, OpenCL 1.2, and CUDA. This contribution presents the status of the code and an outlook of future developments of SixTrack, SixDesk and SixTrackLib.
+\end{abstract}
+
+\section{Introduction}
+
+\section{Conclusion}
+
+\begin{thebibliography}{99} % Use for 1-9 references
+\bibitem{sixweb}
+SixTrack Project website, \url{http://cern.ch/sixtrack}.
+
+\end{thebibliography}
+
+\end{document}
+	
