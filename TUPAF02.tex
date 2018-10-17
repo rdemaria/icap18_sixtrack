@@ -64,7 +64,7 @@
 
 \begin{document}
 
-\title{SixTrack project: status, running environment, and new developments\thanks{Research supported by the HL-LHC project}}
+\title{SixTrack project: status, runtime environment, and new developments\thanks{Research supported by the HL-LHC project}}
 
 \author{
 R.~De Maria \thanks{riccardo.de.maria@cern.ch},
@@ -94,18 +94,18 @@ S.~Singh, IIT Madras, India \thanks{Work supported by Google Summer of Code 2018
 
 %
 \begin{abstract}
-SixTrack is a single-particle tracking code for high-energy circular accelerators routinely used at CERN for the Large Hadron Collider (LHC), its luminosity upgrade (HL-LHC), the Future Circular Collider (FCC), and the Super Proton Synchrotron (SPS) simulations. The code is based on a 6D symplectic tracking engine, which is optimised for long-term tracking simulations and delivers fully reproducible results on several platforms. It also includes multiple scattering engines for beam-matter interaction studies, as well as facilities to run integrated simulations with FLUKA and GEANT4. These features differentiate SixTrack from general-purpose, optics-design software like MAD-X. The code recently underwent a major restructuring to merge advanced features into a single branch, such as multiple ion species, interface with external codes, and high-performance input/output (XRootD, HDF5). This restructuring also removed a large number of build flags, instead enabling/disabling the functionality at run-time. In the process, the code moved from Fortran 77 to Fortran 2018 standard, achieving also a better modularization. Physics models (beam-beam effects, RF-multipoles, current carrying wires, solenoid, and electron lenses) and methods (symplecticity check) have also been reviewed and refined to offer more accurate results. The SixDesk running environment allows the user to manage the large batches of simulations required for accurate predictions of the dynamic aperture. SixDesk supports CERN LSF and HTCondor batch systems, as well as the BOINC infrastructure in the framework of the LHC@Home volunteering computing project. SixTrackLib is a new library aimed at providing a portable and flexible tracking engine for single- and multi-particle problems using the models and formalism of SixTrack. The tracking routines are implemented in a parametrized C code that is specialised to run vectorized in CPUs and GPUs, by using SIMD intrinsics, OpenCL 1.2, and CUDA technologies. This contribution presents the status of the code and an outlook on future developments of SixTrack, SixDesk, and SixTrackLib.
+SixTrack is a single-particle tracking code for high-energy circular accelerators routinely used at CERN for the Large Hadron Collider (LHC), its luminosity upgrade (HL-LHC), the Future Circular Collider (FCC), and the Super Proton Synchrotron (SPS) simulations. The code is based on a 6D symplectic tracking engine, which is optimised for long-term tracking simulations and delivers fully reproducible results on several platforms. It also includes multiple scattering engines for beam-matter interaction studies, as well as facilities to run integrated simulations with FLUKA and GEANT4. These features differentiate SixTrack from general-purpose, optics-design software like MAD-X. The code recently underwent a major restructuring to merge advanced features into a single branch, such as multiple ion species, interface with external codes, and high-performance input/output (XRootD, HDF5). This restructuring also removed a large number of build flags, instead enabling/disabling the functionality at run-time. In the process, the code was moved from Fortran 77 to Fortran 2018 standard, also allowing and achieving a better modularization. Physics models (beam-beam effects, RF-multipoles, current carrying wires, solenoid, and electron lenses) and methods (symplecticity check) have also been reviewed and refined to offer more accurate results. The SixDesk runtime environment allows the user to manage the large batches of simulations required for accurate predictions of the dynamic aperture. SixDesk supports CERN LSF and HTCondor batch systems, as well as the BOINC infrastructure in the framework of the LHC@Home volunteering computing project. SixTrackLib is a new library aimed at providing a portable and flexible tracking engine for single- and multi-particle problems using the models and formalism of SixTrack. The tracking routines are implemented in a parametrized C code that is specialised to run vectorized in CPUs and GPUs, by using SIMD intrinsics, OpenCL 1.2, and CUDA technologies. This contribution presents the status of the code and an outlook on future developments of SixTrack, SixDesk, and SixTrackLib.
 \end{abstract}
 
 \section{Introduction}
 SixTrack~\cite{manual,sixweb} is a 6D single-particle symplectic tracking code able to compute the trajectories of individual relativistic charged particles in circular accelerators for studying dynamic aperture (DA) or evaluating the performance of beam-intercepting devices like collimators~\cite{roderik_samereport}. It can compute linear and non-linear optics functions, time-dependent effects, and extract indicators of chaos from tracking data. SixTrack implements scattering routines and aperture calculations to compute ``loss maps'', i.e., leakage from collimators as a function of longitudinal position along the ring, and collimation efficiency~\cite{collimat}. 
 
-Differently from a general-purpose code like MAD-X~\cite{madx, madxICAP18}, SixTrack is optimised for speed and numerical reproducibility. It can be also linked with the BOINC library to use the volunteering computing project LHC@Home~\cite{lhcathome}.
-SixTrack studies, such as estimation of dynamic aperture of large storage rings like the Large Hadron Collider (LHC) or the Future Circular Collider (FCC), require massive computing resources, since they consist of scans over large parameter spaces for probing non-linear beam dynamics over long times.
+Different from a general-purpose code like MAD-X~\cite{madx, madxICAP18}, SixTrack is optimised for speed and numerical reproducibility. It can be also linked with the BOINC library to use the volunteering computing project LHC@Home~\cite{lhcathome}.
+SixTrack studies, such as estimation of dynamic aperture of large storage rings like the Large Hadron Collider (LHC) or the Future Circular Collider (FCC), require massive computing resources, since they consist of scans over large parameter spaces for probing non-linear beam dynamics over long periods.
 
-The SixDesk running environment manages SixTrack simulations from input generation, job queue management (using HTCondor or LSF in the CERN BATCH service and customised software in CERN Boinc server), to collecting and post-processing results.  
+The SixDesk runtime environment manages SixTrack simulations from input generation, job queue management (using HTCondor or LSF in the CERN BATCH service and customised software in CERN Boinc server), to collecting and post-processing results.  
 
-SixTrackLib is a new library built from scratch in C with the main aim of offering a portable tracking engine for other codes and offloading SixTrack simulation on GPUs.
+SixTrackLib is a new library built from scratch in C with the main aim of offering a portable tracking engine for other codes and offloading SixTrack simulation to GPUs.
 
 This paper summarises the main existing features of SixTrack, SixDesk and SixTrackLib and provide detail about the main development lines.
 
@@ -114,18 +114,18 @@ This paper summarises the main existing features of SixTrack, SixDesk and SixTra
 SixTrack tracks an ensemble of particles defined by a set of coordinates through several beam-line elements, using symplectic maps~\cite{ripken95, heinemann95, barber87}, or scattering elements.
 
 \subsection{Coordinates}
-The set of coordinates is larger than the minimum needed to describe the motion. Additional variables are used to store energy-related quantities used in the tracking maps that are updated only on energy changes, which does not occur very frequently in synchrotrons in absence of radiation effects, to save computational time. Thick maps for dipole and quadrupoles also reuse the energy-dependent factors of the first- and second-order polynomial of the map that are recalculated at each energy change. Furthermore, different ion species, such debris from interaction with matter, can be tracked at the same time using an extension of the usual symplectic formalism~\cite{ions}.
+The set of coordinates is larger than the minimum needed to describe the motion. Additional variables are used to store energy-related quantities used in the tracking maps that are updated only on energy changes, which does not occur very frequently in synchrotrons in absence of radiation effects, to save computational time. Thick maps for dipole and quadrupoles also reuse the energy-dependent factors of the first- and second-order polynomial of the map that are recalculated at each energy change. Furthermore, different ion species, such as debris from interaction with matter, can be tracked at the same time using an extension of the usual symplectic formalism~\cite{ions}.
 
-Variables used internally in tracking are not canonical, however, once converted in canonical variables, the maps are symplectic.
-Differently from other codes, SixTrack uses
+Variables used internally in tracking are not canonical, however, once they are converted to canonical form, the maps are symplectic.
+Different from other codes, SixTrack uses
 \[
 \sigma=s - \beta_0 c t
 \]
-as longitudinal coordinate during tracking to avoid rounding errors associated to the relativistic $\beta$ when updating time delays in drifts and
+as the longitudinal coordinate during tracking to avoid rounding errors associated to the relativistic $\beta$ when updating time delays in drifts and
 \[
 \left(\zeta=\frac{\beta}{\beta_0} \sigma, \quad \delta=\frac{P-P_0}{P_0}\right)
 \]
-as conjugate canonical variables in 6D optics calculations which uses explicitly symplectic maps.
+as conjugate canonical variables in 6D optics calculations which use explicitly symplectic maps.
 
 
 \subsection{Beam-line elements}
@@ -157,7 +157,7 @@ Internally, the scattering module supports elastic scattering through Monte Carl
 
 \subsection{Optics calculations}
 
-SixTrack contains matrix code for 5D optics calculation and a 6D tracking engine using Truncated Power Series Algebra library (TPSA \cite{tpsa}) for 6D optics calculation. The 6D tracking engine uses canonical variables and it provides a cross-check of the symplecticity of the one-turn-map. Coupled Twiss parameters (using the Mais-Ripken formalism~\cite{maisripken}) can be extracted along the lattice. The optics parameters are optionally used in the beam-beam elements for self-consistent simulations. The 6D optics module has been recently improved by removing some unnecessary ultra-relativistic approximations introducing small symplectic errors.
+SixTrack contains matrix code for 5D optics calculation and a 6D tracking engine using Truncated Power Series Algebra library (TPSA \cite{tpsa}) for 6D optics calculation. The 6D tracking engine uses canonical variables and it provides a cross-check of the symplecticity of the one-turn-map. Coupled Twiss parameters (using the Mais-Ripken formalism~\cite{maisripken}) can be extracted along the lattice. The optics parameters are optionally used in the beam-beam elements for self-consistent simulations. The 6D optics module has been recently improved by removing some unnecessary ultra-relativistic approximations which introduced small symplectic errors.
 
 \subsection{Dynamic effects}
 
@@ -171,7 +171,7 @@ Tracking data are post processed during the study and summary files, containing 
 
 Particle's invariants are calculated for each initial condition and based on the average invariant over a user-defined range of turns.
 An initial estimate of the invariant is obtained by assuming no coupling between the planes of motion, via the usual relation for the Courant-Snyder ellipse, e.g.\ for the horizontal plane.
-Alternatively, an estimate of the decoupled single-particle emittance for the three oscillation modes can be calculated from the eigenvectors of the motion ($\bar{v}$), which may be constructed from the one-turn map), see for example~\cite{maisripken}. Various parameters relevant to the nonlinear motion, such as smear and detuning, are also evaluated.
+Alternatively, an estimate of the decoupled single-particle emittance for the three oscillation modes can be calculated from the eigenvectors of the motion ($\bar{v}$), which may be constructed from the one-turn map, see for example~\cite{maisripken}. Various parameters relevant to the nonlinear motion, such as smear and detuning, are also evaluated.
 
 In addition to quantities relevant to particle survival, estimates of the long-term stability are obtained through a Lyapunov-like analysis performed by examining the phase-space separation of initially close by particle pairs. In particular, the angular separation in phase for the three oscillation modes
 \begin{align}
@@ -194,7 +194,7 @@ A collection of routines for frequency analysis has been linked in SixTrack, nam
 
 \subsection{Input and output}
 
-Initial conditions can be given in amplitude steps or taken from an external file. A dump module offers multiple ways to extract tracking data both in terms of type observable (physical coordinates, canonical coordinates, normalised coordinates, averages and first order distribution momenta), selection of turns and observation points. Data are written in ASCII and, in few cases, a binary option is also available. Support for output of simulation data to a HDF5~\cite{hdf5} files and ROOT~\cite{root} is also currently being developed.
+Initial conditions can be given in amplitude steps or taken from an external file. A dump module offers multiple ways to extract tracking data both in terms of type observable (physical coordinates, canonical coordinates, normalised coordinates, averages and first order distribution momenta) in a selection of turns and observation points. Data are written in ASCII and, in a few cases, a binary option is also available. Support for output of simulation data to a HDF5~\cite{hdf5} files and ROOT~\cite{root} is also currently being developed.
 
 Furthermore, it is planned to develop a new way to generate the distribution that is used as initial conditions for tracking. This will provide the functionality to create matched or mismatched distributions in both physical and normalised coordinates.
 
@@ -203,7 +203,7 @@ Furthermore, it is planned to develop a new way to generate the distribution tha
 Collimation studies can also be performed running SixTrack coupled~\cite{flukaCouplingVV} to Fluka~\cite{FLUKA1,FLUKA2}. In this configuration, the two codes exchange particles at run time, with the aim of combining the refined tracking through the accelerator lattice, performed by SixTrack, with the detailed scattering models, implemented in Fluka, when the beam reaches intercepting devices. The use in the Fluka-SixTrack coupling of the same Fluka geometries used for subsequent energy-deposition calculations run with Fluka allows an excellent level of consistency of results.
 
 Additionally, a more generalised interface ``BDEX'' for interfacing external codes is also included, enabling for example tracking of multiple bunches or coupling to cavity simulation codes.
-Here, the exact protocol can be implemented a plug-in to SixTrack~\cite{recentDevels2}.
+Here, the exact protocol can be implemented as a plug-in to SixTrack~\cite{recentDevels2}.
 
 %A more generalised interface ``BDEX'' for interfacing external codes has also been developed~\cite{recentDevels2}. This is capable of exchanging or exporting the tracked particle distribution at any marker. The protocol for the particle exchange is flexible, allowing addition of new protocols as needed. Currently, only an ASCII-based protocol, intended to be used with UNIX pipes, is supported. The functionality has previously been used (together with DYNK's functionality to communicate with external programs) to track whole HL-LHC trains, swapping out the bunch at a point along the ring. Additionally, the code was also coupled to an external collective-effects model for computing beam loading in the crab cavities, where the effect of each bunch passing through the cavity as well as the response of the RF system was applied to the next bunch {\bf I would add a refernce here.}.
 
@@ -211,13 +211,13 @@ Here, the exact protocol can be implemented a plug-in to SixTrack~\cite{recentDe
 
 A CMake-based build and test system has recently been added~\cite{recentDevels2}. This greatly simplified the maintenance of the dependencies between the various build options, as well as the setup for building on the large range of supported platforms.
 
-The testing framework CTest is also provided as part of CMake. For SixTrack, this is used to verify that the executables are still providing the expected output after the code has been modified, and to track the changes to the output. Furthermore, it is used for checking that the versions compiled for different platforms are agreeing, which is vital for BOINC. The main benefit of using CTest is that test running is fully automatic and gives a simple pass/fail output, which is also integrated with GitHub for pull requests.
+The testing framework CTest is also provided as part of CMake. For SixTrack, this is used to verify that the executables are still providing the expected output after the code has been modified, and to track the changes to the output. Furthermore, it is used for checking that the results from versions compiled for different platforms are in agreement, which is vital for BOINC. The main benefit of using CTest is that test running is fully automatic and gives a simple pass/fail output, which is also integrated with GitHub for pull requests.
 
 \subsection{Performance}
 
 Thanks to the recent re-factoring, the internal particles arrays are fully dynamic, therefore the number of particles that can be tracked in parallel is limited by the system memory and not by a build-time flag. A machine model like the LHC, using about $18$k elements and $4.6$k high-order multipole blocks, needs about $220$~\textmu s per particle per turn on a single CPU core at 3.4~GHz. Typical studies requires of the order of $10^9 - 10^{12}$ particle turns and even more for parameter scans. For this reason, SixTrack is often used in conjunction with high-performance computing facilities described in the following section.
 
-\section{Running environments}
+\section{Runtime environments}
 
 The SixDesk environment~\cite{sixdesk} is the simulation framework used to manage and control the large amount of information necessary for, and produced by, SixTrack studies of dynamic aperture. It supports CERN batch systems~\cite{cernbatch} as well as the BOINC platform for volunteering computing available at the LHC@Home project~\cite{lhcathome}. The SixDeskDB post-processing tool collects data from SixDesk, performs post-processing analysis, and prepares reports and plots. It also offers a Python API for interactive analysis. Similarly to the SixTrack code, the SixDesk environment and SixDeskDB are continuously updated, extending the coverage of the studies and keeping the environment up to date with the latest developments in the CERN IT infrastructure.
 
@@ -240,13 +240,13 @@ The SixDesk environment~\cite{sixdesk} is the simulation framework used to manag
 
 Volunteer computing has been used successfully at CERN since 2004 with the LHC@Home project; it has provided additional computing power for CPU-intensive applications with small data sets, as well as an outreach channel for CERN activities. LHC@Home started off with SixTrack, which had been successively ported from mainframe to supercomputer to emulator farms and PCs. In order to run on the largest number of volunteer computers, SixTrack is compiled for the most common operating systems, architectures, and CPU instruction sets.
 
-In terms of computing power provided by the volunteers to LHC@home, the system is capable of handling $1\times 10^5$ tasks on average, with peaks of $3.5 \times 10^5$ tasks simultaneously running on $2.4 \times 10^4$ hosts observed during SixTrack intense simulation campaigns (see Figure~\ref{fig:boinc}). Every SixTrack task is run twice to eliminate random host errors and minimise the impact of a failing host. The LHC@Home capacity available for SixTrack can be compared against the average of $2.5 \times 10^5$ running tasks on $1.4 \times 10^5$ processor cores in the CERN computer centre, which is fully loaded with tasks from analysis and reconstruction of collisions recorded by LHC experiments, and has limited spare capacity for beam dynamics simulations.
+In terms of computing power provided by the volunteers to LHC@home, the system is capable of handling $1\times 10^5$ tasks on average, with peaks of $3.5 \times 10^5$ tasks simultaneously running on $2.4 \times 10^4$ hosts observed during SixTrack intense simulation campaigns (see Figure~\ref{fig:boinc}). Every SixTrack task is run twice to eliminate random host errors and minimise the impact of a failing host. The LHC@Home capacity available for SixTrack can be compared to the average of $2.5 \times 10^5$ running tasks on $1.4 \times 10^5$ processor cores in the CERN computer centre, which is fully loaded with tasks from analysis and reconstruction of collisions recorded by LHC experiments, and has limited spare capacity for beam dynamics simulations.
 
-The CERN batch system is presently managed by means of the HTCondor~\cite{HTCondor} package. Contrary to BOINC, most suitable for a steady stream of work units, the CERN batch system provides users with a responsive computing resource. Also, contrary to LHC@Home, no redundancy is implemented during task submission since the code run in a controlled environment, although very rarely hardware errors do leak in the results.
+The CERN batch system is presently managed by means of the HTCondor~\cite{HTCondor} package. Contrary to BOINC, most suitable for a steady stream of work units, the CERN batch system provides users with a responsive computing resource. Also, contrary to LHC@Home, no redundancy is implemented during task submission since the code run in a controlled environment, although very rarely hardware errors do appear in the results.
 
 \subsection{Developments}
 
-One of the main development lines of SixDesk is porting the collimation studies to the BOINC platform for volunteering computing. This entailed a thorough revision of the collimation part, currently on-going, to make results numerically stable and reproducible across platforms. The possibility to interrupt and restart the computation (check-point/restart capability), which is essential to run on BOINC,  is being added as well.
+One of the main development lines of SixDesk is porting the collimation studies to the BOINC platform for volunteer computing. This entailed a thorough revision of the collimation part, currently on-going, to make results numerically stable and reproducible across platforms. The possibility to interrupt and restart the computation (check-point/restart capability), which is essential to run on BOINC,  is being added as well.
 
 Other lines of development include: the addition of new parameters for dedicated scans of dynamic aperture; the possibility of running chains of jobs in BOINC, for simulating extended periods of beam time in the ring; a pre-filtering stage of submission to the CERN batch system prior to submission to BOINC, to avoid short tasks, with consequent inefficient use of volunteer resources, like bandwidth and time.
 
@@ -257,7 +257,7 @@ In the context of single-particle simulations, tracking requires no interaction 
 Introducing parallelism into a mature code-base like SixTrack, even from such a favourable starting point, is challenging. It entails a high levels of complexity due to competing paradigms and concepts of parallel computing. In particular, a fast-changing technological landscape in combination with a diverse, multi-vendor and long-tailed selection of hardware available via initiatives like LHC@Home~\cite{lhcathome}, as well as the realities of limited development resources are the main decision-making factors. These and other constraints motivated the design and ongoing development of a new, stand-alone library providing the core functionality of SixTrack.
 
 SixTrackLib~\cite{sixtracklib} is an open-source library developed from scratch using C and C++, allowing users to off-load the particle tracking onto supported HPC resources. As of this writing, it provides
-a)~a representation for a set of particles; b)~a set of beam-elements (drifts, multipoles, cavities, $4D$ and $6D$ beam-beam elements, etc.); c)~a set of maps describing the tracking of the particles over the beam-elements; d)~a dedicated generic buffer for managing and transferring data to the computing nodes; e)~implementations and abstractions for different computing environments (auto-vectorized CPU code, OpenCL~\cite{opencl}, CUDA~\cite{cuda}); f)~high-level APIs in C, C++ and (under development) Python.
+a)~a representation for a set of particles; b)~a set of beam-elements (drifts, multipoles, cavities, $4D$ and $6D$ beam-beam elements, etc.); c)~a set of maps describing the tracking of the particles over the beam-elements; d)~a dedicated generic buffer for managing and transferring data to the computing nodes; e)~implementations and abstractions for different computing environments (auto-vectorized CPU code, OpenCL~\cite{opencl}, CUDA~\cite{cuda}); )~high-level APIs in C, C++ and (under development) Python.
 
 The chosen design allows for the complete separation of business logic from the modelled physics, allowing the latter to be shared across all architectures. Maps and tracking functions are implemented in a sub-set of the C99 language, in terms of the provided abstractions. The physics parts are exposed to the user in a modular and header-only fashion, allowing to tap into SixTrackLib under a wide-range of use cases currently out of reach for a stand-alone application such as SixTrack.
 
@@ -279,7 +279,7 @@ On lattices actually featuring complex features like beam-beam elements, this ob
 
 The SixTrack tracking code is the main code used to simulate long-term stability, collimation cleaning, and machine failure scenarios in the LHC, SPS and FCC due its unique features of speed and integration with HPC resources. It comes with a fully developed running environment to perform easily the massive numerical simulations that include scans on beam and ring parameters and the option of using different computing resources, from standard batch services to volunteer computing. 
 
-In spite of its maturity, SixTrack is still under intense development phase. On the short time scale, it is planned to merge into a single code the features that were developed in the framework of the studies of the LHC collimation system. On a longer time scale, the main lines of development include  tighter integration of existing features, interoperability with other codes, and deployment on new architectures such as GPU.
+In spite of its maturity, SixTrack is still in an intense development phase. On the short time scale, it is planned to merge into a single code the features that were developed in the framework of the studies of the LHC collimation system. On a longer time scale, the main lines of development include  tighter integration of existing features, interoperability with other codes, and deployment on new architectures such as GPU.
 
 \section{Acknowledgements}
 
@@ -576,7 +576,7 @@ SixTrackLib source code repository,
 J. Nickolls {\it et al.}, ``Scalable Parallel Programming with CUDA``, {\it ACM Queue} {\bf 6} 2 (2008).
 
 \bibitem{opencl}
-J. Stone {\it et al.}, ``OpenCL: A Parallel Programming Standard for Heterogeneous Computing Systems'', {\it  Computing in Science & Engineering } {\bf 12} 3 (2010).
+J. Stone {\it et al.}, ``OpenCL: A Parallel Programming Standard for Heterogeneous Computing Systems'', {\it  Computing in Science \& Engineering} {\bf 12} 3 (2010).
 
 \end{thebibliography}
 \null 
