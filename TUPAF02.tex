@@ -164,8 +164,14 @@ SixTrack contains matrix code for 5D optics calculation and a 6D tracking engine
 A general functionality for dynamically-changing simulation settings on a turn-by-turn basis has been implemented~\cite{dynk,dynk2}. This allows setting magnet strengths including multipoles, RF amplitude and phase, reference energy, and beam-beam element as a function of turn number. This can be useful for a number of different studies, e.g.\  magnet snap-back in the LHC~\cite{snapback_lhc}, HL-LHC crab cavity failure scenarios~\cite{crabfail1,crabfail2,crabfail3}, studies of beam losses during energy ramp~\cite{modulation}, and hollow electron-lens modulation~\cite{elens-miriam}. The settings can be internally computed as a function of turn number, or loaded from a file. These functions are specified using a flexible language that  allows combining functions to achieve the required effect. The architecture of the functionality makes it easy to add support for new elements or new functions.
 
 \subsection{Post processing}
+\begin{figure}[tbh]
+\centering
+ \includegraphics[width=\columnwidth]{surv_plot1.png}
+ \caption{Survival plot of a fine phase-space scan for the LHC. The simulations was divided in task of $60$ particles pairs covering the phase space in $2\sigma$ and $1.5^\circ$ steps.}
+ \label{fig:study}
+\end{figure}
 
-Long-term tracking with SixTrack is used extensively at CERN for studying the DA, with a typical study consisting of up to $\sim 2\times 10^{6}$ individual tracking simulations over $10^5-10^6\,\mathrm{turns}$.
+Long-term tracking with SixTrack is used extensively at CERN for studying the DA, with a typical study consisting of up to $\sim 2\times 10^{6}$ individual tracking simulations over $10^5-10^6\,\mathrm{turns}$ (see Figure \ref{fig:study} for an example).
 
 Tracking data are post processed during the study and summary files, containing the main results of the simulation for each initial condition, are returned back to the user. In particular, tracking summary files for each initial condition identify particle loss/survival, final surviving turn numbers and the inferred particle amplitudes.
 
@@ -221,12 +227,7 @@ Thanks to the recent re-factoring, the internal particles arrays are fully dynam
 
 The SixDesk environment~\cite{sixdesk} is the simulation framework used to manage and control the large amount of information necessary for, and produced by, SixTrack studies of dynamic aperture. It supports CERN batch systems~\cite{cernbatch} as well as the BOINC platform for volunteering computing available at the LHC@Home project~\cite{lhcathome}. The SixDeskDB post-processing tool collects data from SixDesk, performs post-processing analysis, and prepares reports and plots. It also offers a Python API for interactive analysis. Similarly to the SixTrack code, the SixDesk environment and SixDeskDB are continuously updated, extending the coverage of the studies and keeping the environment up to date with the latest developments in the CERN IT infrastructure.
 
-\begin{figure}[tbh]
-\centering
- \includegraphics[width=\columnwidth]{surv_plot1.png}
- \caption{Survival plot of a fine phase-space scan for the LHC. The simulations was divided in task of $60$ particles pairs covering the phase space in $2\sigma$ and $1.5^\circ$ steps.}
- \label{fig:study}
-\end{figure}
+
 
 \begin{figure*}[tbh]
 \centering
